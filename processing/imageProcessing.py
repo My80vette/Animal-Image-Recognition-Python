@@ -107,5 +107,10 @@ model.fit(image_train, label_train, epochs=10, batch_size=32, validation_data=(i
 
 # Next is the evaluation phase
 """
-    
+    Here, we get to see a performace report on data that the model NEVER saw during training
+    test_loss: indicate how "wrong" the model's predictions tend to be
+    test_acc: the accuracy metric, not the only metric that matters, but higher is better
 """
+test_loss, test_acc = model.evaluate(image_test, label_test)
+print('Model Accuracy: ', test_acc)
+
