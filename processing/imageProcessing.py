@@ -31,6 +31,9 @@ from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 # to_categorical allows us to turn our labels into numerical representations that can be better understood by our output layer
 from keras.utils import to_categorical
 
+
+from keras.callbacks import ReduceLROnPlateau
+
 # First we want to load all of the CIFAR images and divide them neatly so we have some to train and some to test
 # We use tuples to handle the image representation and its associated label, this allows us to have labeled images to train and labels to check during testing
 """ 
@@ -79,12 +82,16 @@ model.add(Conv2D(64, (3, 3), activation='relu', input_shape=(32, 32, 3)))
 # Once again, we will do the downsampling, keeping the important features of the feature recognition,
 model.add(MaxPooling2D(pool_size=2)) 
 
+# Lets add one more layer, I think we arent getting enough from the feature extraction to make solid predictions
+model.add(Conv2D(128, (3, 3), activation='relu'))  # More filters for complexity
+model.add(MaxPooling2D(pool_size=2))
+
 # This next layer will take all the features learned by the Convolutions and spreads them into a single long vector, this will be important in the coming layers
 model.add(Flatten())
 
 # This is a fully connected layer, each node here connects to all nodes from the previous layer
 # This does some high-level pattern mixing to try and make sense of the extracted features
-model.add(Dense(64, activation='relu'))
+model.add(Dense(128, activation='relu'))
 
 # This is the final layer, we use 10 nodes to denote the 10 classes
 model.add(Dense(10))
@@ -100,6 +107,10 @@ model.add(Dense(10))
 """
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
+lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3) 
+model.fit(image_train, label_train, epochs=10, batch_size=16, validation_data=(image_test, label_test), callbacks=[lr_reducer])  
+
+
 # Now we will begin the training phase
 """
     We will get batches of images from "image_train" and their true labels from "label_train"
@@ -108,7 +119,7 @@ model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accur
     2.) Batch_size: How many images the model sees before calculating a single weight update
     3.) Validation data: Allows the model to see how its doing with a "seperate" data set
 """
-model.fit(image_train, label_train, epochs=10, batch_size=32, validation_data=(image_test, label_test))
+model.fit(image_train, label_train, epochs=10, batch_size=16, validation_data=(image_test, label_test))
 
 # Next is the evaluation phase
 """
