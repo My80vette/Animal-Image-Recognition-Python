@@ -28,6 +28,9 @@ from keras.models import Sequential
 # Conv2D: Image Extraction. MaxPooling2D: simplifies features. Flatten: Prepares data to feed into the NN. Dense: Classic NN layer for decision making
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 
+# to_categorical allows us to turn our labels into numerical representations that can be better understood by our output layer
+from keras.utils import to_categorical
+
 # First we want to load all of the CIFAR images and divide them neatly so we have some to train and some to test
 # We use tuples to handle the image representation and its associated label, this allows us to have labeled images to train and labels to check during testing
 """ 
@@ -40,6 +43,9 @@ from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 """
 (image_train, label_train), (image_test, label_test) = cifar10.load_data()
 
+# One-hot encode the labels: This must happen after we load data but BEFORE we train the model
+label_train = to_categorical(label_train)
+label_test = to_categorical(label_test)
 
 # Next, we need to convert the images pixel values into a numerical representation to be better processed by our model
 # "astype('float32')" converts the pixel values from integers to floats for better calculations, we divide by 255 to scale the pixel values from 0-1 rather than 0-255
@@ -65,24 +71,23 @@ model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)))
     Our next layer will do the "downsampling", this will reduce the size of the feature representations (from the first layer)
     from 3x3 representations to 2x2. Think of compression, where we reduce filesizes while keeping the important information
 """
-model.add(MaxPooling2D(2, 2))
+model.add(MaxPooling2D(pool_size=2)) 
 
 # Now we will do more feature recognition, but with 64 filters for even more powerful detection
 model.add(Conv2D(64, (3, 3), activation='relu', input_shape=(32, 32, 3)))
 
 # Once again, we will do the downsampling, keeping the important features of the feature recognition,
-model.add(MaxPooling2D(2, 2))
+model.add(MaxPooling2D(pool_size=2)) 
 
 # This next layer will take all the features learned by the Convolutions and spreads them into a single long vector, this will be important in the coming layers
 model.add(Flatten())
 
 # This is a fully connected layer, each node here connects to all nodes from the previous layer
 # This does some high-level pattern mixing to try and make sense of the extracted features
-model.add(Dense(64, activation='rulu'))
+model.add(Dense(64, activation='relu'))
 
 # This is the final layer, we use 10 nodes to denote the 10 classes
-# 'Softmax' turns the outputs into probabilities for each class, the highest probability is the chosen answer
-model.add(Dense(10), activation='Softmax')
+model.add(Dense(10))
 
 """
     Optimizer: determines how aggressivley our model learns from our mistakes
