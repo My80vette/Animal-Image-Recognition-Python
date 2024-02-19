@@ -79,12 +79,20 @@ model.add(MaxPooling2D(pool_size=2))
 # Now we will do more feature recognition, but with 64 filters for even more powerful detection
 model.add(Conv2D(64, (3, 3), activation='relu', input_shape=(32, 32, 3)))
 
-# Once again, we will do the downsampling, keeping the important features of the feature recognition,
+# Once again, we will do the downsampling, keeping the important features of the feature recognition
 model.add(MaxPooling2D(pool_size=2)) 
 
 # Lets add one more layer, I think we arent getting enough from the feature extraction to make solid predictions
 model.add(Conv2D(128, (3, 3), activation='relu'))  # More filters for complexity
-model.add(MaxPooling2D(pool_size=2))
+
+
+
+# Adding more compelx feature detection to hopefully get the accuracy up
+model.add(Conv2D(256, (3, 3), activation='relu'))  # More filters for complexity
+
+model.add(Conv2D(512, (3, 3), activation='relu', padding='same'))  # More filters for complexity
+
+
 
 # This next layer will take all the features learned by the Convolutions and spreads them into a single long vector, this will be important in the coming layers
 model.add(Flatten())
@@ -108,7 +116,7 @@ model.add(Dense(10))
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
 lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3) 
-model.fit(image_train, label_train, epochs=10, batch_size=16, validation_data=(image_test, label_test), callbacks=[lr_reducer])  
+model.fit(image_train, label_train, epochs=5, batch_size=16, validation_data=(image_test, label_test), callbacks=[lr_reducer])  
 
 
 # Now we will begin the training phase
