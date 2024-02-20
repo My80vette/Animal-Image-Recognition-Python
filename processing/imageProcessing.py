@@ -13,7 +13,7 @@ import tensorflow as tf
 # The Tensorflow library "Keras" has the cifar10 dataset
 # We want to import the dataset from the keras library, which was imported with tensorflow
 # This dataset contains the thousands of images we will use to both train and test our model
-from keras.datasets import cifar10
+from keras.datasets import mnist
 
 # Numpy is going to give us various mathematical tools and functions that are key for this type of high level processing
 import numpy as np
@@ -31,8 +31,14 @@ from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 # to_categorical allows us to turn our labels into numerical representations that can be better understood by our output layer
 from keras.utils import to_categorical
 
-
 from keras.callbacks import ReduceLROnPlateau
+
+from keras.layers import Dropout
+
+from keras.optimizers import SGD
+
+from keras.layers import BatchNormalization
+
 
 # First we want to load all of the CIFAR images and divide them neatly so we have some to train and some to test
 # We use tuples to handle the image representation and its associated label, this allows us to have labeled images to train and labels to check during testing
@@ -44,7 +50,11 @@ from keras.callbacks import ReduceLROnPlateau
     label_test - a numpy array containing the associated labels for the testing images
     We have the same setup for our testing variables, the load_data function neatly divides the images and labels for us.
 """
-(image_train, label_train), (image_test, label_test) = cifar10.load_data()
+(image_train, label_train), (image_test, label_test) = mnist.load_data()
+
+# Reshape and Normalize images
+image_train = image_train.reshape(60000, 28, 28, 1)
+image_test = image_test.reshape(10000, 28, 28, 1)
 
 # One-hot encode the labels: This must happen after we load data but BEFORE we train the model
 label_train = to_categorical(label_train)
@@ -67,8 +77,8 @@ model = Sequential()
 """
 # "model.add" is how we add layers to the model, setting up each layer for a specific functionality
 # Relu is used to allow our model to detect more complex, non linear features
-# Input shape allows us to give the dimensions of the image, with the color channels: 32 x 32 pixels with RGB color channels
-model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)))
+# Input shape allows us to give the dimensions of the image, with the color channels: 28 x 28 pixels with one color channel.
+model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)))
 
 """
     Our next layer will do the "downsampling", this will reduce the size of the feature representations (from the first layer)
@@ -77,7 +87,7 @@ model.add(Conv2D(32, (3, 3), activation='relu', input_shape=(32, 32, 3)))
 model.add(MaxPooling2D(pool_size=2)) 
 
 # Now we will do more feature recognition, but with 64 filters for even more powerful detection
-model.add(Conv2D(64, (3, 3), activation='relu', input_shape=(32, 32, 3)))
+model.add(Conv2D(64, (3, 3), activation='relu'))
 
 # Once again, we will do the downsampling, keeping the important features of the feature recognition
 model.add(MaxPooling2D(pool_size=2)) 
@@ -85,13 +95,14 @@ model.add(MaxPooling2D(pool_size=2))
 # Lets add one more layer, I think we arent getting enough from the feature extraction to make solid predictions
 model.add(Conv2D(128, (3, 3), activation='relu'))  # More filters for complexity
 
-
-
 # Adding more compelx feature detection to hopefully get the accuracy up
 model.add(Conv2D(256, (3, 3), activation='relu'))  # More filters for complexity
 
 model.add(Conv2D(512, (3, 3), activation='relu', padding='same'))  # More filters for complexity
 
+model.add(BatchNormalization())
+
+model.add(Dropout(0.2))
 
 
 # This next layer will take all the features learned by the Convolutions and spreads them into a single long vector, this will be important in the coming layers
@@ -102,7 +113,7 @@ model.add(Flatten())
 model.add(Dense(128, activation='relu'))
 
 # This is the final layer, we use 10 nodes to denote the 10 classes
-model.add(Dense(10))
+model.add(Dense(10, activation='softmax'))
 
 """
     Optimizer: determines how aggressivley our model learns from our mistakes
@@ -113,10 +124,14 @@ model.add(Dense(10))
     2.) We want to quantify "how wrong" a response is, some wrong answers are better than others
     3.) We want to keep track of what % of images were correctly identified, we can tweak the model filters based on this metric
 """
-model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+optimizer=SGD(learning_rate=0.005)
+
+model.compile(optimizer=optimizer, 
+              loss='categorical_crossentropy', 
+              metrics=['accuracy'])
 
 lr_reducer = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3) 
-model.fit(image_train, label_train, epochs=5, batch_size=16, validation_data=(image_test, label_test), callbacks=[lr_reducer])  
+model.fit(image_train, label_train, epochs=30, batch_size=16, validation_data=(image_test, label_test), callbacks=[lr_reducer])  
 
 
 # Now we will begin the training phase
@@ -135,6 +150,7 @@ model.fit(image_train, label_train, epochs=10, batch_size=16, validation_data=(i
     test_loss: indicate how "wrong" the model's predictions tend to be
     test_acc: the accuracy metric, not the only metric that matters, but higher is better
 """
+
 test_loss, test_acc = model.evaluate(image_test, label_test)
 print('Model Accuracy: ', test_acc)
 
