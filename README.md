@@ -46,7 +46,7 @@ Explore transfer learning by using pre-trained models to further enhance the mod
 
 **Why did I learn this?**  
 I want to get a better understanding of more widely used programming languages like python which are great for ML due to the increase in demand for ML/AI skills.    
-I want to use this project as a jumping off point to start to develop more complex image recognitnion apps, such as fashion apps which can use image recogniton to reccomend outfits, this is the first step in that process.  
+I want to use this project as a jumping off point to start to develop more complex image recognitnion apps, such as fashion apps which can use image recogniton to recomend outfits, this is the first step in that process.  
 
 **Project Status:**    
-The project was a success, after several rounds of tweaking, testing, and refinement, I was able to successfully reach 99% accuracy, I will continue to develop the model however to deal with more advanced data sets and images.  
+The project was a success, after several rounds of tweaking, testing, and refinement, I was able to successfully reach 99% accuracy, I will continue to develop the model however to deal with more advanced data sets and images, and studying more terminology and techniques to make myself a stronger developer
